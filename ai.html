@@ -1,0 +1,112 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI Call — Mini Tab</title><meta property="og:title" content="Mini Tab — Jatin ka AI dost"><meta name="theme-color" content="#0b0d12">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#0b0d12;--card:#151924;--muted:#8b93a7;--acc:#7c5cff;--acc2:#00d4ff;--u:linear-gradient(135deg,#7c5cff,#4f8bff)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:radial-gradient(circle at 50% -10%,#241a4d 0,#0b0d12 55%);color:#eef;height:100dvh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top))}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--u);display:grid;place-items:center;font-weight:800}
+header h1{font-size:17px;margin:0}header small{color:var(--muted);font-size:12px;display:block}
+header .sp{flex:1}.ib{background:var(--card);border:1px solid #232a3b;color:#dde;border-radius:12px;width:40px;height:40px;font-size:18px}
+#chat{flex:1;overflow-y:auto;padding:8px 14px 16px;scroll-behavior:smooth}
+.m{max-width:84%;padding:11px 14px;border-radius:18px;margin:7px 0;line-height:1.45;white-space:pre-wrap;animation:in .2s ease;font-size:15.5px}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.u{background:var(--u);margin-left:auto;border-bottom-right-radius:6px}.a{background:var(--card);border:1px solid #232a3b;border-bottom-left-radius:6px}
+.a .spk{display:inline-block;margin-top:6px;font-size:12px;color:var(--muted);cursor:pointer}
+.dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#aab;animation:b 1s infinite}.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.3}40%{opacity:1}}
+#hero{text-align:center;padding:30px 10px 10px;color:var(--muted)}#hero b{display:block;font-size:22px;color:#fff;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}.chip{background:var(--card);border:1px solid #2a3247;border-radius:20px;padding:8px 12px;font-size:14px;color:#dde}
+#dock{padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;background:rgba(11,13,18,.85);backdrop-filter:blur(8px);border-top:1px solid #1c2232}
+#txt{flex:1;padding:13px 14px;border-radius:24px;border:1px solid #2a3247;background:var(--card);color:#eef;font-size:16px;outline:none}
+#mic{width:56px;height:56px;border-radius:50%;border:0;background:var(--u);color:#fff;font-size:24px;box-shadow:0 6px 24px #7c5cff55;flex:none}
+#mic.on{background:#ff3d71;animation:p 1.2s infinite}@keyframes p{0%{box-shadow:0 0 0 0 #ff3d7188}70%{box-shadow:0 0 0 16px #ff3d7100}100%{box-shadow:0 0 0 0 #ff3d7100}}
+#send{width:44px;height:44px;border-radius:50%;border:0;background:#232a3b;color:#fff;font-size:18px;flex:none}
+#status{text-align:center;font-size:12px;color:var(--acc2);height:16px}
+.sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:9}.sheet.show{display:flex}
+.panel{background:#121621;width:100%;border-radius:22px 22px 0 0;padding:20px 18px 28px;line-height:1.5;max-height:90dvh;overflow:auto}
+.panel h2{margin:0 0 10px;font-size:18px}.panel input,.panel select{width:100%;padding:12px;margin:6px 0 12px;border-radius:12px;border:1px solid #2a3247;background:var(--card);color:#eef;font-size:15px}
+.row{display:flex;justify-content:space-between;align-items:center;margin:8px 0}.btn{width:100%;padding:13px;border-radius:14px;border:0;background:var(--u);color:#fff;font-size:16px;font-weight:600;margin-top:6px}
+.btn.ghost{background:#232a3b}a{color:#9db4ff}.muted{color:var(--muted);font-size:13px}
+</style></head><body>
+<header><div class="logo">T</div><div><h1>Mini Tab</h1><small id="sub">tumhara AI dost</small></div><div class="sp"></div>
+<button class="ib" id="stopb" title="Stop" onclick="stopAll()" style="display:none">⏹</button>
+<button class="ib" onclick="openS()">⚙️</button></header>
+<div id="chat"><div id="hero"><b>Namaste Jatin 👋</b>🎤 dabao aur bolo, ya neeche likho
+<div class="chips"><span class="chip" onclick="q('Aaj ka ek motivation quote do')">💪 Motivation</span><span class="chip" onclick="q('Free Fire me headshot ke 3 tips do')">🎯 FF tips</span><span class="chip" onclick="q('YouTube Shorts ke liye 5 viral title ideas do')">▶️ YT ideas</span><span class="chip" onclick="q('Mujhe ek joke sunao')">😂 Joke</span></div></div></div>
+<div id="status"></div>
+<div id="dock"><input id="txt" placeholder="Kuch bhi pucho..." enterkeyhint="send" onkeydown="if(event.key==='Enter')send()"><button id="send" onclick="send()">➤</button><button id="mic" onclick="toggleMic()">🎤</button></div>
+<div class="sheet" id="sheet" onclick="if(event.target===this)closeS()"><div class="panel">
+<h2>⚙️ Settings</h2>
+<div id="keyhelp" class="muted">Ek baar free key chahiye (card nahi lagta):<br>1. <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> kholo<br>2. "Create API key" → copy → yahan paste</div>
+<label>API key</label><input id="key" placeholder="AIza..." type="password">
+<label>Naam (AI tumhe kya bulaye)</label><input id="uname" placeholder="Jatin">
+<label>Personality</label><select id="pers"><option value="dost">😎 Dost (masti wala)</option><option value="teacher">📚 Teacher (samjhane wala)</option><option value="coach">💪 Coach (motivate kare)</option></select>
+<div class="row"><span>🔊 Jawab bol ke sunao</span><input type="checkbox" id="tts" style="width:auto"></div>
+<div class="row"><span>🔁 Lagatar baat (hands-free)</span><input type="checkbox" id="loop" style="width:auto"></div>
+<label>Bolne ki speed</label><input type="range" id="rate" min="0.7" max="1.5" step="0.05">
+<button class="btn" onclick="saveS()">Save</button><button class="btn ghost" onclick="clearChat()">🗑️ Chat saaf karo</button>
+<p class="muted">Key aur chat sirf tumhare phone me save hote hain.</p></div></div>
+<script>
+const $=id=>document.getElementById(id), LS=localStorage;
+let S=Object.assign({key:'',uname:'Jatin',pers:'dost',tts:true,loop:true,rate:1.05,model:'gemini-3.8-flash'},JSON.parse(LS.getItem('mt_s')||'{}'));
+if(!S.picked){S.model='gemini-3.8-flash'}
+let hist=JSON.parse(LS.getItem('mt_h')||'[]');
+const P={dost:"ek masti wala, friendly dost",teacher:"ek patient teacher jo step by step samjhata hai",coach:"ek energetic coach jo motivate karta hai"};
+const sys=()=>`Tum 'Mini Tab' ho, ${S.uname} ke ${P[S.pers]}. Hamesha Hinglish (Roman Hindi) me, chhote jawab do (2-4 line) jab tak lamba na maanga jaye. Markdown, *, # mat use karo. Emoji kabhi kabhi.`;
+function save(){LS.setItem('mt_h',JSON.stringify(hist.slice(-40)))}
+function add(c,t,anim=true){$('hero')&&$('hero').remove();const d=document.createElement('div');d.className='m '+c;if(!anim)d.style.animation='none';d.textContent=t;
+ if(c==='a'&&t){const s=document.createElement('span');s.className='spk';s.textContent='🔊 sunao';s.onclick=()=>speak(t,true);d.appendChild(document.createElement('br'));d.appendChild(s)}
+ $('chat').appendChild(d);$('chat').scrollTop=1e9;return d}
+function typing(){$('hero')&&$('hero').remove();const d=document.createElement('div');d.className='m a dots';d.innerHTML='<span></span><span></span><span></span>';$('chat').appendChild(d);$('chat').scrollTop=1e9;return d}
+function status(t){$('status').textContent=t||''}
+function ver(n){const m=n.match(/gemini-(\d+(?:\.\d+)?)/);return m?parseFloat(m[1]):0}
+async function pickModel(exclude){const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+S.key);const j=await r.json();
+ const ms=(j.models||[]).map(m=>m.name.replace('models/','')).filter(n=>/flash/.test(n)&&!/image|tts|live|audio|thinking|preview|exp/.test(n)&&n!==exclude&&!(S.bad||[]).includes(n)&&(j.models.find(x=>x.name==='models/'+n).supportedGenerationMethods||[]).includes('generateContent'));
+ if(!ms.length)return false;
+ ms.sort((x,y)=>(/lite/.test(y)-/lite/.test(x))||ver(y)-ver(x)); // fastest first: newest flash-lite, then flash
+ S.model=ms[0];S.picked=1;LS.setItem('mt_s',JSON.stringify(S));return true}
+async function ask(onChunk,retry=true){
+ if(!S.picked){try{await pickModel()}catch(e){}}
+ const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),45000);
+ let r;try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${S.model}:streamGenerateContent?alt=sse&key=${S.key}`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({systemInstruction:{parts:[{text:sys()}]},contents:hist.slice(-20),generationConfig:{maxOutputTokens:400,temperature:0.8}})});}
+ catch(e){clearTimeout(to);throw new Error(e.name==='AbortError'?'Bahut der lag gayi, dobara bhejo':'Internet check karo')}
+ if(!r.ok){clearTimeout(to);let j={};try{j=await r.json()}catch(e){};const em=j.error?.message||'';
+  if(/API key/i.test(em))throw new Error('API key galat hai, ⚙️ me check karo');
+  if(r.status===429)throw new Error('Aaj ki free limit khatam, thodi der baad try karo');
+  if(/model/i.test(em)&&(S.bad||[]).length<6){S.bad=(S.bad||[]).concat(S.model);const old=S.model;if(await pickModel(old))return ask(onChunk,retry)}
+  throw new Error(em||('Error '+r.status))}
+ const rd=r.body.getReader(),dec=new TextDecoder();let buf='',out='';
+ try{while(true){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+  while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith('data:'))continue;
+   try{const j=JSON.parse(line.slice(5));const t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');if(t){out+=t;onChunk(out.replace(/[*#`]/g,''))}}catch(e){}}}}
+ catch(e){if(!out)throw new Error(e.name==='AbortError'?'Bahut der lag gayi, dobara bhejo':'Connection toot gaya')}
+ finally{clearTimeout(to)}
+ return out.replace(/[*#`]/g,'').trim()||'...'}
+let busy=false;
+async function send(text){const t=(text??$('txt').value).trim();if(!t||busy)return;if(!S.key){openS();return}
+ $('txt').value='';add('u',t);hist.push({role:'user',parts:[{text:t}]});save();busy=true;let w=typing(),bub=null;status('soch raha hoon...');
+ try{const a=await ask(part=>{if(!bub){w.remove();bub=document.createElement('div');bub.className='m a';$('chat').appendChild(bub)}bub.textContent=part;$('chat').scrollTop=1e9});
+  if(bub)bub.remove();else w.remove();add('a',a);hist.push({role:'model',parts:[{text:a}]});save();status('');if(S.tts)speak(a);else if(S.loop)setTimeout(startMic,400)}
+ catch(e){if(bub)bub.remove();w.remove();hist.pop();save();add('a','⚠️ '+e.message);status('')}busy=false}
+function q(t){send(t)}
+let voices=[];function loadV(){voices=speechSynthesis.getVoices()}try{loadV();speechSynthesis.onvoiceschanged=loadV}catch(e){}
+function speak(t,force){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[\u{1F300}-\u{1FAFF}]/gu,''));u.lang='hi-IN';u.rate=+S.rate;
+ const v=voices.find(v=>/hi-IN/i.test(v.lang))||voices.find(v=>/en-IN/i.test(v.lang));if(v)u.voice=v;
+ u.onstart=()=>{$('stopb').style.display='';status('bol raha hoon...')};u.onend=()=>{$('stopb').style.display='none';status('');if(S.loop&&!force)setTimeout(startMic,300)};
+ speechSynthesis.speak(u)}catch(e){}}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec,on=false;
+function startMic(){if(!SR){alert('Mic ke liye Chrome use karo');return}if(on||busy)return;speechSynthesis.cancel();rec=new SR();rec.lang='hi-IN';rec.interimResults=true;
+ rec.onstart=()=>{on=true;$('mic').classList.add('on');status('sun raha hoon... 🎧')};
+ rec.onresult=e=>{let s='';for(const r of e.results)s+=r[0].transcript;$('txt').value=s;if(e.results[e.results.length-1].isFinal){rec.stop();send(s)}};
+ rec.onend=()=>{on=false;$('mic').classList.remove('on');if(!busy)status('')};rec.onerror=e=>{status(e.error==='no-speech'?'kuch suna nahi':'mic: '+e.error)};rec.start()}
+function toggleMic(){if(on){rec.stop();return}startMic()}
+function stopAll(){speechSynthesis.cancel();if(on)rec.stop();S.loop&&(status('ruk gaya'))}
+function openS(){$('key').value=S.key;$('uname').value=S.uname;$('pers').value=S.pers;$('tts').checked=S.tts;$('loop').checked=S.loop;$('rate').value=S.rate;$('keyhelp').style.display=S.key?'none':'block';$('sheet').classList.add('show')}
+function closeS(){$('sheet').classList.remove('show')}
+function saveS(){S.key=$('key').value.trim();S.uname=$('uname').value.trim()||'Jatin';S.pers=$('pers').value;S.tts=$('tts').checked;S.loop=$('loop').checked;S.rate=$('rate').value;LS.setItem('mt_s',JSON.stringify(S));closeS();$('sub').textContent=S.key?'ready ✅':'tumhara AI dost'}
+function clearChat(){hist=[];save();location.reload()}
+hist.forEach(h=>add(h.role==='user'?'u':'a',h.parts[0].text,false));
+if(!S.key)setTimeout(openS,500);else $('sub').textContent='ready ✅';
+</script></body></html>

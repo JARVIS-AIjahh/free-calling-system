@@ -1,0 +1,57 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Free Call — Jatin</title><meta property="og:title" content="Free Call — internet se free voice/video call"><meta name="theme-color" content="#0b0d12">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:radial-gradient(circle at 50% -10%,#0f3d2e 0,#0b0d12 60%);color:#eef;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
+.wrap{width:100%;max-width:440px;padding:20px}h1{font-size:22px;margin:10px 0 2px}.muted{color:#8b93a7;font-size:13px}
+.card{background:#151924;border:1px solid #232a3b;border-radius:20px;padding:18px;margin:14px 0}
+.id{font-size:34px;font-weight:800;letter-spacing:4px;text-align:center;margin:6px 0;color:#3ddc97}
+input{width:100%;padding:14px;border-radius:14px;border:1px solid #2a3247;background:#0f131c;color:#eef;font-size:22px;letter-spacing:3px;text-align:center}
+.row{display:flex;gap:10px;margin-top:12px}.btn{flex:1;padding:14px;border:0;border-radius:14px;font-size:16px;font-weight:700;color:#fff;background:#1fa463}
+.btn.v{background:#2b6cff}.btn.r{background:#e53935}.btn.g{background:#232a3b}
+#callv{position:fixed;inset:0;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:5}
+#rv{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}#lv{position:absolute;right:12px;top:12px;width:110px;border-radius:12px;z-index:2}
+#who{position:relative;z-index:2;font-size:26px;font-weight:700;text-shadow:0 2px 8px #000}#tm{position:relative;z-index:2;color:#ccc;margin-top:6px}
+.ctl{position:absolute;bottom:40px;display:flex;gap:18px;z-index:3}.ctl button{width:64px;height:64px;border-radius:50%;border:0;font-size:26px;background:#ffffff22;color:#fff}.ctl .end{background:#e53935}
+#inc{position:fixed;inset:0;background:#0b0d12ee;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:6;gap:10px}
+a{color:#7aa7ff}
+</style></head><body><div class="wrap">
+<h1>📞 Free Call</h1><div class="muted">Internet se free voice/video call. Dono ke paas ye page khula hona chahiye.</div>
+<div class="card"><div class="muted">Tumhari Call ID (dost ko bhejo):</div><div class="id" id="myid">…</div>
+<div class="row"><button class="btn g" onclick="share()">📤 Share ID</button></div><div class="muted" id="net" style="margin-top:8px;text-align:center">connect ho raha hai...</div></div>
+<div class="card"><div class="muted">Dost ki ID daalo:</div><input id="to" inputmode="numeric" maxlength="6" placeholder="123456">
+<div class="row"><button class="btn" onclick="call(false)">📞 Voice</button><button class="btn v" onclick="call(true)">🎥 Video</button></div></div>
+<div class="card"><b>🤖 AI se baat karni hai?</b><div class="muted">AI ke saath bina button dabaye lagatar baat: <a href="ai.html">AI Call kholo</a></div></div>
+<div class="muted">Tip: call ke time page band mat karna. Wi-Fi/data dono chalega.</div></div>
+<div id="callv"><video id="rv" autoplay playsinline></video><video id="lv" autoplay playsinline muted></video><div id="who"></div><div id="tm">ring ho raha hai...</div>
+<div class="ctl"><button id="mb" onclick="mute()">🎤</button><button id="cb" onclick="cam()">📷</button><button class="end" onclick="hang()">✖</button></div></div>
+<div id="inc"><div style="font-size:60px">📞</div><div id="incw" style="font-size:22px"></div><div class="row" style="width:80%"><button class="btn r" onclick="reject()">Kaato</button><button class="btn" onclick="accept()">Uthao</button></div></div>
+<script>
+const $=i=>document.getElementById(i),PRE='jtfreecall-';
+let my=localStorage.getItem('fc_id')||String(Math.floor(100000+Math.random()*900000));localStorage.setItem('fc_id',my);
+let peer,cur,stream,pending,tmr,ringO;
+function start(){peer=new Peer(PRE+my,{config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});
+ peer.on('open',()=>{$('myid').textContent=my;$('net').textContent='✅ Online — call aa sakti hai'});
+ peer.on('error',e=>{if(e.type==='unavailable-id'){my=String(Math.floor(100000+Math.random()*900000));localStorage.setItem('fc_id',my);peer.destroy();start();return}
+  if(e.type==='peer-unavailable'){alert('Ye ID online nahi hai. Dost ka page khula hona chahiye.');endUI();return}$('net').textContent='⚠️ '+e.type});
+ peer.on('disconnected',()=>{$('net').textContent='reconnect...';setTimeout(()=>peer.reconnect(),1500)});
+ peer.on('call',c=>{if(cur){c.close();return}pending=c;$('incw').textContent='ID '+c.peer.replace(PRE,'')+(c.metadata&&c.metadata.video?' — video call':' — voice call');$('inc').style.display='flex';ring(true)});}
+function ring(on){try{if(on){const ac=new (window.AudioContext||webkitAudioContext)();ringO=setInterval(()=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=480;o.connect(g);g.connect(ac.destination);g.gain.value=.15;o.start();o.stop(ac.currentTime+.6)},1500);navigator.vibrate&&navigator.vibrate([400,200,400])}else clearInterval(ringO)}catch(e){}}
+async function media(v){return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:v?{facingMode:'user'}:false})}
+async function call(v){const t=$('to').value.trim();if(!/^\d{6}$/.test(t)){alert('6 digit ID daalo');return}if(t===my){alert('Ye tumhari apni ID hai');return}
+ try{stream=await media(v)}catch(e){alert('Mic/camera ki permission do');return}
+ showUI('ID '+t,v);const c=peer.call(PRE+t,stream,{metadata:{video:v}});wire(c)}
+async function accept(){ring(false);$('inc').style.display='none';const v=!!(pending.metadata&&pending.metadata.video);
+ try{stream=await media(v)}catch(e){alert('Mic/camera ki permission do');pending.close();return}
+ showUI(pending.peer.replace(PRE,''),v);pending.answer(stream);wire(pending)}
+function reject(){ring(false);$('inc').style.display='none';pending&&pending.close();pending=null}
+function wire(c){cur=c;c.on('stream',s=>{$('rv').srcObject=s;$('tm').textContent='00:00';let t0=Date.now();clearInterval(tmr);tmr=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('tm').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},1000)});
+ c.on('close',endUI);c.on('error',endUI)}
+function showUI(w,v){$('who').textContent=w;$('tm').textContent='ring ho raha hai...';$('lv').srcObject=v?stream:null;$('lv').style.display=v?'':'none';$('cb').style.display=v?'':'none';$('callv').style.display='flex'}
+function endUI(){clearInterval(tmr);$('callv').style.display='none';stream&&stream.getTracks().forEach(t=>t.stop());stream=null;cur=null}
+function hang(){cur&&cur.close();endUI()}
+function mute(){const a=stream&&stream.getAudioTracks()[0];if(a){a.enabled=!a.enabled;$('mb').textContent=a.enabled?'🎤':'🔇'}}
+function cam(){const a=stream&&stream.getVideoTracks()[0];if(a){a.enabled=!a.enabled;$('cb').textContent=a.enabled?'📷':'🚫'}}
+function share(){const txt='Mujhe free call karo! Ye link kholo: '+location.href.split('#')[0]+' aur meri ID daalo: '+my;if(navigator.share)navigator.share({text:txt});else{navigator.clipboard.writeText(txt);alert('Copy ho gaya')}}
+start();
+</script></body></html>
