@@ -1,0 +1,67 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI Calling Agent</title><meta property="og:title" content="AI Calling Agent — free"><meta name="theme-color" content="#0b0d12">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:radial-gradient(circle at 50% -10%,#2a1a55 0,#0b0d12 60%);color:#eef;min-height:100dvh}
+.wrap{max-width:460px;margin:auto;padding:20px}h1{font-size:22px;margin:8px 0}.muted{color:#8b93a7;font-size:13px;line-height:1.5}
+label{display:block;margin-top:12px;font-size:14px;color:#cdd}input,textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid #2a3247;background:#151924;color:#eef;font-size:15px;margin-top:6px;font-family:inherit}
+textarea{min-height:110px}.btn{width:100%;padding:14px;border:0;border-radius:14px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#7c5cff,#4f8bff);margin-top:14px}.btn.g{background:#232a3b}
+.box{background:#151924;border:1px solid #232a3b;border-radius:16px;padding:14px;margin-top:14px;word-break:break-all;font-size:13px}
+.chk{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px;color:#cdd}.chk input{width:auto;margin-top:2px}
+#call{display:none;min-height:100dvh;flex-direction:column;align-items:center;justify-content:space-between;padding:50px 20px 40px;text-align:center}
+.av{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#00d4ff);display:grid;place-items:center;font-size:56px;font-weight:800;margin:20px auto;transition:transform .2s}
+.av.talk{animation:pl 1s infinite}.av.listen{box-shadow:0 0 0 10px #3ddc9744}@keyframes pl{50%{transform:scale(1.07)}}
+#aname{font-size:26px;font-weight:700}#st{color:#9fb0d0;margin-top:6px;min-height:20px}#cap{color:#ccd;font-size:15px;min-height:60px;max-width:360px;margin:auto}
+.cb{width:76px;height:76px;border-radius:50%;border:0;font-size:32px;color:#fff}.go{background:#1fa463}.end{background:#e53935}
+</style></head><body>
+<div class="wrap" id="builder">
+<h1>🤖 AI Calling Agent Builder</h1><div class="muted">Apna AI agent banao. Ek call link milega, jo bhi khole wo agent se awaaz me baat karega. Free.</div>
+<label>Agent ka naam</label><input id="n" placeholder="Riya - Sharma Mobile Shop">
+<label>Agent ka kaam / jaankari (jitna detail, utna smart)</label><textarea id="p" placeholder="Tum Sharma Mobile Shop, Gwalior ki receptionist ho. Dukaan 10am-9pm khuli. Repair, recharge, naye phone. Customer ka naam aur number note karo..."></textarea>
+<label>Pehli line (greeting)</label><input id="g" placeholder="Namaste! Sharma Mobile Shop me swagat hai, bataiye kya madad karun?">
+<label>Bhasha</label><select id="l"><option value="hi-IN">Hindi / Hinglish</option><option value="en-IN">English (India)</option></select>
+<label>Google AI Studio key (free) — <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#9db4ff">yahan se lo</a></label><input id="k" type="password" placeholder="AIza...">
+<div class="chk"><input type="checkbox" id="emb"><span>Key link me daalo (taaki dusre bina key ke call kar sakein). ⚠️ Link jiske paas hoga wo tumhari free limit use karega. Sirf bharose walon ko do.</span></div>
+<button class="btn" onclick="make()">🔗 Call link banao</button>
+<div id="out" style="display:none"><div class="box" id="lnk"></div><button class="btn g" onclick="copyL()">📋 Copy / Share</button><button class="btn" onclick="location.href=link">📞 Khud test call karo</button></div>
+<div class="muted" style="margin-top:16px">Kaise kaam karta hai: link me agent ki setting hoti hai (koi server nahi). Call me phone ka mic sunta hai → AI jawab likhta hai → phone bol ke sunata hai. Chrome best hai.</div>
+</div>
+<div id="call"><div><div class="av" id="av">A</div><div id="aname"></div><div id="st">Call shuru karne ke liye 📞 dabao</div></div>
+<div id="cap"></div>
+<div id="keyask" style="display:none;width:100%;max-width:360px"><input id="k2" type="password" placeholder="Apni free Google AI key daalo (AIza...)"><div class="muted">aistudio.google.com/apikey se free milti hai</div></div>
+<div><button class="cb go" id="gob" onclick="startCall()">📞</button><button class="cb end" id="endb" onclick="endCall()" style="display:none">✖</button></div></div>
+<script>
+const $=i=>document.getElementById(i);let link='',A=null,key='',model=localStorage.getItem('ag_model')||'',hist=[],live=false,rec;
+function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function b64d(s){s=s.replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(escape(atob(s))))}
+function make(){const o={n:$('n').value.trim()||'AI Agent',p:$('p').value.trim(),g:$('g').value.trim()||'Namaste! Bataiye kya madad karun?',l:$('l').value};
+ const k=$('k').value.trim();if(k)localStorage.setItem('ag_key',k);if($('emb').checked&&k)o.k=k;
+ link=location.origin+location.pathname+'#a='+b64e(o);$('lnk').textContent=link;$('out').style.display='block'}
+function copyL(){const t=(A&&A.n||$('n').value||'AI Agent')+' se baat karo: '+link;if(navigator.share)navigator.share({text:t});else{navigator.clipboard.writeText(t);alert('Copy ho gaya')}}
+function ver(n){const m=n.match(/gemini-(\d+(?:\.\d+)?)/);return m?parseFloat(m[1]):0}
+async function pick(bad){const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+key);const j=await r.json();if(!r.ok)throw new Error(j.error?.message||'key error');
+ const ms=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace('models/','')).filter(n=>/flash/.test(n)&&!/image|tts|live|audio|thinking|preview|exp/.test(n)&&n!==bad);
+ ms.sort((x,y)=>(/lite/.test(y)-/lite/.test(x))||ver(y)-ver(x));if(!ms.length)throw new Error('model nahi mila');model=ms[0];localStorage.setItem('ag_model',model)}
+async function ask(t,retry=true){if(!model)await pick();hist.push({role:'user',parts:[{text:t}]});
+ const sys=`Tum "${A.n}" ho, ek phone call par baat karne wale AI agent. Tumhara kaam aur jaankari: ${A.p||'Logon ki madad karo.'}\nNiyam: yeh voice call hai, isliye 1-2 chhote vaakya bolo, list/markdown/emoji mat use karo. ${A.l==='hi-IN'?'Hinglish (Roman Hindi) me bolo.':'Speak in simple Indian English.'} Jo nahi pata wo mat banao.`;
+ const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),30000);
+ try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:hist.slice(-16),generationConfig:{maxOutputTokens:200,temperature:0.7}})});
+  const j=await r.json();if(!r.ok){hist.pop();const em=j.error?.message||'';if(retry&&/model/i.test(em)){await pick(model);return ask(t,false)}if(r.status===429)throw new Error('Aaj ki free limit khatam');throw new Error(em||r.status)}
+  const a=((j.candidates?.[0]?.content?.parts)||[]).map(p=>p.text||'').join('').replace(/[*#`]/g,'').trim()||'Ji?';hist.push({role:'model',parts:[{text:a}]});return a}
+ finally{clearTimeout(to)}}
+let voices=[];try{voices=speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>voices=speechSynthesis.getVoices()}catch(e){}
+function say(t){return new Promise(res=>{$('av').className='av talk';$('st').textContent='bol raha hai...';$('cap').textContent=t;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=A.l;const v=voices.find(v=>v.lang===A.l);if(v)u.voice=v;u.rate=1.05;u.onend=u.onerror=()=>{$('av').className='av';res()};speechSynthesis.speak(u)}catch(e){res()}})}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function listen(){return new Promise(res=>{if(!SR){alert('Chrome use karo');res('');return}rec=new SR();rec.lang=A.l;let got='';$('av').className='av listen';$('st').textContent='sun raha hai... bolo';
+ rec.onresult=e=>{got=e.results[0][0].transcript};rec.onend=()=>{$('av').className='av';res(got)};rec.onerror=()=>{};rec.start()})}
+async function loop(){let miss=0;while(live){const t=await listen();if(!live)break;if(!t){if(++miss>=3){await say('Lagta hai aawaz nahi aa rahi. Call khatam karta hoon.');endCall();break}continue}miss=0;
+ $('cap').textContent='"'+t+'"';$('st').textContent='soch raha hai...';try{const a=await ask(t);if(!live)break;await say(a)}catch(e){$('st').textContent='⚠️ '+e.message;await say('Maaf kijiye, thodi dikkat hai.')}}}
+async function startCall(){key=A.k||$('k2').value.trim()||localStorage.getItem('ag_key')||'';if(!key){$('keyask').style.display='block';$('st').textContent='Pehle key daalo';return}
+ localStorage.setItem('ag_key',key);$('keyask').style.display='none';live=true;hist=[];$('gob').style.display='none';$('endb').style.display='';
+ try{await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){alert('Mic permission do');endCall();return}
+ hist.push({role:'model',parts:[{text:A.g}]});await say(A.g);loop()}
+function endCall(){live=false;try{rec&&rec.abort()}catch(e){}speechSynthesis.cancel();$('gob').style.display='';$('endb').style.display='none';$('st').textContent='Call khatam. Dobara ke liye 📞';$('av').className='av'}
+const m=location.hash.match(/a=([^&]+)/);
+if(m){try{A=b64d(m[1]);$('builder').style.display='none';$('call').style.display='flex';$('aname').textContent=A.n;$('av').textContent=(A.n[0]||'A').toUpperCase();document.title=A.n+' — AI Call';link=location.href;
+ if(!A.k&&!localStorage.getItem('ag_key'))$('keyask').style.display='block'}catch(e){alert('Link kharab hai')}}
+else{const k=localStorage.getItem('ag_key');if(k)$('k').value=k}
+</script></body></html>

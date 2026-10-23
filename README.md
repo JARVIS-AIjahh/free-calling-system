@@ -6,6 +6,8 @@ Internet se **free** voice aur video call — WhatsApp call jaisa. Koi server, k
 - **index.html** — Free Call: har user ko 6 digit ID milti hai. Dost ki ID daalo → Voice ya Video call. Mute, camera on/off, call timer, ringtone.
 - **ai.html** — AI Call: AI se bina button dabaye lagatar Hinglish me baat (Google AI Studio ki free key se).
 
+- **agent.html** — AI Calling Agent Builder: agent ka naam, kaam aur greeting likho → call link milta hai. Jo bhi link khole, 📞 dabaye aur agent se awaaz me baat kare (mic → AI → awaaz). Setting link me hi hoti hai, koi server nahi.
+
 ## Kaise chalta hai
 - Calls **WebRTC** se direct ek phone se dusre phone jaati hain (peer-to-peer).
 - Dono ko milaane ke liye **PeerJS** ka free public server use hota hai.
